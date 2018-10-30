@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>Drowning Pool</title>
+    <title>To do List</title>
     <link href="todo.css" rel="stylesheet">
 </head>
 
@@ -96,7 +96,7 @@
             let username = document.getElementById("userName").value;
             let password = document.getElementById("password").value;
             if (username.length > 1 && password.length > 1) {
-                // Time to login .....
+                // Time to login
                 fetch(`/app/user/${username}`).then(data => {
                     if (data.status === 200) {
                         return data.json()
@@ -109,7 +109,7 @@
                     clearScreen();
                     displaySubmitRequestForm();
                 }).catch(err => {
-                    // Deal withn the error.
+                    // Deal with the error.
                 })
             } else {
                 alert("Danger! Danger You are a hacker ;)");
