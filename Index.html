@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Tadaaa List</title>
+    <link href="todo.css" rel="stylesheet">
+    <style>
+        *[hidden] {
+            display: none;
+        }
+    </style>
+
+</head>
+
+<body>
+<div id="content">
+
+</div>
+<template id="Lister">
+    <form>
+        <label for="description">Description:</label>
+        <input type="text" id="description" >
+        <button id="submitRequest" type="button">Submit</button>
+        <button id="EditLister" type="button">Edit</button>
+
+    </form>
+</template>
+
+<template id="authenticateUserUITemplate">
+    <div class="LoginBoks">
+    <form>
+
+        <input type="text" id="userName" name="userName" placeholder="Username" value="christian"> <!--endre??-->
+
+        <input type="password" id="password" name="password" placeholder="Password" value="12345678"> <!--endre??-->
+    <div class="Remember">
+        <label for="rememberMe">Remember Me:</label>
+        <input type="checkbox" id="rememberMe" placeholder="Remember me"> <!--//cookies?? fungerer denne?-->
+
+    </div>
+
+        <input type="button" id="loginBt" name="loginBt" value="Login">
+        <button type="button" id="createUserBt">Create User</button>
+    </form>
+        <span id="testResult"></span>
+    </div>
+
+</template>
+
+<template id="createUserUITemplate">
+
+    <form id="createUserForm">
+
+        <input type="text" id="newUserName" required placeholder="Username">
+
+        <input type="email" id="email" required placeholder="Email">
+
+        <input type="password" id="newPassword" required placeholder="Password">
+
+        <button>Create</button>
+
+    </form>
+
+</template>
+
+</body>
+<script>
+
+
+    let authenticatedUser = null;
+    let authenticationToken = null;
+    const DEBUG = true;
+    const USER_ROLE = 42;
+
+    displayLoginForm();
+
+
+    (function () {
+        if (!authenticatedUser) {
+            displayLoginForm();
+        } else {
+            displaySubmitRequestForm();
+        }
+    })();
+
+    //TODO: Sjekke om noen av disse funksjonene blir brukt under.
+    //TODO: Funksjon for å legge til flere templates og lister.
+    // TODO: SQL lagrer listene som folk skriver inn.
+    //TODO: hente lister
+    //TODO: CSS til forside, lister osv..
+    //TODO: Gå gjennom oppgaven enda en gang.
+   /* function addElement(element) {
+        let content = document.getElementById("content");
+        if (content) {
+            if (element) {
+                content.appendChild(element);
+            } else {
+                console.error(new Error(`The element is empty`))
+            }
+        } else {
+            console.error(new Error(`There is no content element in the document`))
+        }
+    }
+   function clearScreen() {
+        document.getElementById("content").innerHTML = "";
+    }
+    function createElementFromTemplate(templateID) {
+        let template = document.querySelector(templateID);
+        let clone = document.importNode(template.content, true);
+        return clone
+    }
+*/
+
+  function setTemp(id,content) {
+      content.innerHtml = "";
+      let temp = document.getElementById(id);
+      let clone = temp.content.cloneNode(true);
+      content.appendChild(clone);
+  }
+
+    function setTemp(id, content) {
+        content.innerHTML = "";
+        let temp = document.getElementById(id);
+        let clone = temp.content.cloneNode(true);
+        content.appendChild(clone);
+    }
+    //setTemp("id", content)
+
+    function displayLoginForm() {
+       // let loginForm = createElementFromTemplate("#authenticateUserUITemplate")
+        //loginForm = window.document.body.appendChild(loginForm);
+        setTemp("authenticateUserUITemplate", content);
+        //addElement(loginForm);
+        let form = document.getElementById("loginForm");
+        let loginBt = document.querySelector("#loginBt");
+        let createBt = document.querySelector("#createUserBt");
+        loginBt.onclick = async function (evt) {
+
+
+            let username = document.getElementById("userName").value;
+            let password = document.getElementById("password").value;;
+
+            let uploadData = JSON.stringify({
+                pswHash: password,
+                user: username
+            });
+
+
+
+            let cfg = {
+                method: "POST",
+                body: uploadData,
+                headers: {
+                    "Content-Type": "application/json; charset=utf-8"
+                }
+            };
+
+            try {
+
+
+                fetch("/app/user/auth", cfg).then(function (respons){//callback fra funksjonen fetch
+                    if (respons.status < 400) {
+                        console.log(respons);
+                        return respons.json();
+
+                    } else if (respons.status === 401) {
+                        // Username or password was wrong, informe the user.
+                        console.log("Wrong username or password");
+                    } else {
+                        // Some other thing went wrong.
+                        console.log("Could not log you in at this time, try again later");
+                    }
+                }).then(function (responsJSON) { // callback fra respos.json
+                        authenticationToken =  responsJSON.auth;
+                        console.log(authenticationToken);
+
+                        setTemp("Lister", content);
+                        // Her er svaret fra server, og bruker er logget inn
+                        //TODO: Nå er bruker logget inn og vi kan gjemme template id="authenticateUserUITemplate
+                        //TODO: Vise liste eller tilsvarebde.
+                        //TODO: Hente liste data fra server.
+
+
+        /*function (){
+            let  = createElemententFromTemplate("Lister")
+            addElement ()
+        }*/
+
+
+
+
+                }).catch(function (err) {
+                    // fetch could not complete the request.
+                    console.log(err.message);
+                });
+
+            } catch(err) {
+                console.log(err);
+                // Her er svaret fra server og bruker ikke logget inn
+            }
+
+        };
+
+        createBt.onclick = function (evt) {
+            clearScreen();
+            displayCreateUserForm();
+            console.log("Create user bt clicked")
+        }
+    }
+
+
+    function displayCreateUserForm() {
+
+        let element = createElementFromTemplate("#createUserUITemplate")
+        window.document.body.appendChild(element);
+        let form = document.getElementById("createUserForm");
+
+        form.onsubmit = function (evt) {
+
+
+            // Stops the form from submitting
+            evt.preventDefault();
+            // Username, email and password is validated by browser :)
+            // if values are missing it is our mistake in not finding the correct element.
+            // https://developer.mozilla.org/en-US/docs/Learn/HTML/Forms/Form_validation
+            let userName = document.getElementById("newUserName").value;
+            let password = document.getElementById("newPassword").value;
+            let email = document.getElementById("email").value;
+            let role = USER_ROLE;
+
+            fetch('/app/user',{
+                method:"POST",
+                body:JSON.stringify({
+                    name:userName,
+                    pswHash:password,
+                    userRole:role,
+                    email:email
+                }),
+                headers: {
+                    "Content-Type": "application/json; charset=utf-8"
+                },
+            }).then(function(data){
+
+                if(data.status < 400){
+                    return data.json();
+                }
+            }).then(function(token){
+
+                console.log(token);
+
+                localStorage.setItem("token", token.tok);
+                //if(createdUser.id){
+                    // We have a newly created user !!
+                    //clearScreen();
+                    //displayLoginForm();
+                //}
+            }).catch(err =>{
+                console.error(err);
+            });
+        }
+    }
+    function displaySubmitRequestForm() {
+    }
+    function authenticateUser(username, password) {
+        log("Starting authentication request", `Username ${username}`, `Password ${password}`);
+        // We are going to base our authentication on basic authentication. This is a authentication scheme suported by http (RFC 7617)
+        // Read more about it at https://en.wikipedia.org/wiki/Basic_access_authentication and https://developer.mozilla.org/en-US/docs/Web/HTTP/Authentication#Basic_authentication_scheme
+        let credentials = `Basic ${ btoa(username + ":" + password)}`; // This creates a string that looks similar to  "Basic KL9zxHppU2VCX". btoa is a function of the window object.
+        let request = {
+            method: "GET",
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json',
+                'Authorization': credentials
+            }
+        }
+        fetch("/app/authenticate", request).then(function (respons) {
+            if (respons.status < 400) {
+                // OK we are authenticated.
+                return respons.json(); // Grab the JSON payload.
+            } else if (respons.status === 401) {
+                // Username or password was wrong, informe the user.
+                return Promise.reject(new Error("Wrong username or password"));
+            } else {
+                // Some other thing went wrong.
+                return Promise.reject(new Error("Could not log you in at this time, try again later"));
+            }
+        }).then(function (responsJSON) {
+            authenticationToken = responsJSON.auth; // Because this is where the server puts the token.
+            authenticatedUser = responsJSON.user; // Information about the user.
+            displayWelcome();
+        }).catch(function (err) {
+            // fetch could not complete the request.
+            displayError(err.message);
+        });
+    }
+    // Run a request that requiers an auth token.
+    function fetchQuote() {
+        let request = {
+            method: "GET",
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json',
+                'x-access-auth': authenticationToken
+            }
+        }
+        fetch("/app/quote", request).then(function (res) {
+            if (res.status < 400) {
+                return res.json();
+            } else {
+                return Promise.reject(new Error("Session not valid. log inn again"));
+            }
+        }).then(function (json) {
+            document.getElementById("quote").textContent = json.quote;
+        }).catch(function (err) {
+            displayError(err.message);
+        });
+    }
+    // usikker hva dette her er :/
+    function getTemplate(templateID) {
+        let template = document.getElementById(templateID);
+        template = document.importNode(template.content, true);
+        return template;
+    }
+    function addToContainer(node) {
+        document.getElementById("container").appendChild(node);
+    }
+    function clearContainer() {
+        let container = document.getElementById("container");
+        while (container.firstChild) {
+            container.removeChild(container.firstChild);
+        }
+    }
+    function log(...messages) {
+        if (DEBUG) {
+            messages.forEach(msg => {
+                console.log(msg);
+            })
+        }
+    }
+</script>
+
+
+
+</html>
