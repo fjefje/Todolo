@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Log Inn</title>
+    <link href="todo.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <class="w-head">
+          <div class="search">
+             <input id="user_search" placeholder="List name"type="text"/>
+             <!-- <ul id="user_search_table"></ul> -->
+         </div>
+         <div class="user">
+             <p id="user_name_header_tag"></p>
+         </div>
+
+            <div class="dropdown">
+                <button id="dropbtn" class="dropbtn">TASKS TODAY</button>
+                <div class="dropwdown-content" id="notification_list">
+                </div>
+           </div>
+        <!-- <ul> tag defines an unordered (bulleted) list -->
+           <nav class="nav-bar">
+                <ul class="w-nav">
+                    <li role="presentation"> <a class="nav-items" href="logout.html">Logout</a> </li>
+                </ul>
+            </nav>
+          <div class="sidemenu">
+              <div class="info">
+                  <input id="listname" type="text" />
+                  <button onclick="addList()"> New List</button>
+              </div>
+              <div class="list_sidemenu_container">
+                  <ul class="categogry_ul" id="private">
+                      <li id=""board_category">Private Lists</li>
+                  </ul>
+              </div>
+              <div class="content">
+                  <div class="content-head">
+              </div>
+              <div id="listContainer"></div>
+              </div>
+          </div>
+
+<!-- Her er alle js'ene--->
+<script src="list.js"></script>
+<script src="api.js"></script>
+<script src="db.js"></script>
+<script src="requestQue.js"></script>
+<script src="server.js"></script>
+<script src="user.js"></script>
+</body>
+</html>
