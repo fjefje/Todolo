@@ -2,7 +2,9 @@ var express = require('express');
 var router = express.Router();
 var db = require("./db.js");
 var jwt = require('jsonwebtoken');
+var auth = require('./auth.js');
 
+//-------------------- Lager lister i DB -----------------------------
 router.post('/app/list/create', async function(req,res,next){
 
 
@@ -25,8 +27,12 @@ router.post('/app/list/create', async function(req,res,next){
     console.log(result);
     res.status(200).json(result).end();
 });
-
-router.get('/app/list/', async function(req,res,next){
+//----------------------------------------------------------
+router.get('/app/list/', auth, async function(req,res,next){
+    //let query = "Select * FROM alle_lister";
+    //let lists = db.select(query);
+    
+    
     /*
     let token = req.body.token;
     console.log("her er tokenet", token);
@@ -35,9 +41,11 @@ router.get('/app/list/', async function(req,res,next){
         return;
     }
     */
-    let userID = req.query["userID"];
-    let sql = `SELECT * FROM alle_lister WHERE userid=${userID}`;
-    let result = await db.insert(sql);
+    let userID = req.token.id;
+    let sql = `SELECT * FROM "public"."alle_lister" WHERE "userid"=${userID}`;
+    let result = await db.select(sql);
+    
+    console.log(sql);
     
     res.status(200).json(result).end();
 });
@@ -53,8 +61,17 @@ router.post('/app/list/update', async function(req,res,next){
     */
 // --------------Må lage variabler for alle verdiene i sql statementen. 
 // --------------Må lage sql i index router.post('/app/list/update');
+    let query = "Select * FROM alle_lister";
+    let lists = db.select(query);
     
-    let userid = req.body.navn fra index
+    //let userid = req.body.navn fra index
+        
+    let brukerid = req.body.userid;
+    let listeid = req.body.listeid;
+    let listenavn = req.body.listenavn;
+    
+    console.log(hello);
+    
     let userID = req.query["userID"];
     let sql = `UPDATE alle_lister SET listenavn='${listenavn}',time='${time}' WHERE userid=${userid} AND listeid=${listeid}`;
     let result = await db.insert(sql);
