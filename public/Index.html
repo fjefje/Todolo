@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Tadaaa List</title>
+    <link href="todo.css" rel="stylesheet">
+
+</head>
+
+<body>
+<div id="content"></div>
+    
+
+<!--------------- Logg inn template ------------------->
+<template id="authenticateUserUITemplate">
+    <div class="LoginBoks">
+    <form>
+
+        <input type="text" id="userName" name="userName" placeholder="Username" value="christian"> <!--endre??-->
+
+        <input type="password" id="password" name="password" placeholder="Password" value="12345678"> <!--endre??-->
+   
+        <label for="rememberMe" class="Remember">Remember Me:</label>
+        <input type="checkbox" id="rememberMe" placeholder="Remember me"> <!--cookies?? fungerer denne?-->
+
+    
+
+        <input type="button" id="loginBt" name="loginBt" value="Login" onclick="displayLoginForm()">
+        
+        <button type="button" id="createUserBt" onclick="btnCreate()">Create User</button>
+    </form>
+        <span id="testResult"></span>
+    </div>
+    <!--<div id="content"></div>-->
+
+</template>
+    
+<!--------------- Lag ny bruker template ---------------->
+
+<template id="createUserUITemplate">
+
+    <form id="createUserForm">
+
+        <input type="text" id="newUserName" required placeholder="Username">
+
+        <input type="email" id="email" required placeholder="Email">
+
+        <input type="password" id="newPassword" required placeholder="Password">
+        
+        <button class="Create ">Create</button>
+    
+
+    </form>
+
+</template>
+
+<!----------------- Lister template ---------------------->
+    
+<template id="Lister">
+    <form>
+        <label for="txtListName">Lag deg din egen liste</label>
+        
+        <input id="txtListName" placeholder="Navn på liste.. ">
+
+        <ul id="liste"></ul>
+        
+        <button id="btnListCreate" type="button" onclick="btnListCreateClick()">Lag liste.</button>
+    </form>
+</template>
+    
+
+</body>
+<script>
+  // div til template som holder på alle lister og tømmes når en spesifikk liste skal vises. 
+    
+
+    let authenticatedUser = null;
+    let userID = localStorage.getItem('userID');
+    let authenticationToken = null;
+    const DEBUG = true;
+    const USER_ROLE = 42;
+    
+    let cont = document.getElementById("content");
+    
+    //-------
+   
+    
+/*------------------- Sjekker om brukeren er autorisert --------------------------*/ 
+    (function (){
+        if (!authenticatedUser) {
+            displayLoginForm();
+             
+        } else {
+            //displaySubmitRequestForm();
+            displayListForm(); 
+        }      
+    
+    })(); 
+    
+     displayLoginForm();    
+/*------------------- Tømmer container og legger inn ny template -----------------*/
+    function setTemp(id, cont) {
+        cont.innerHTML = "";
+        let temp = document.getElementById(id);
+        let clone = temp.content.cloneNode(true);
+        cont.appendChild(clone);
+    }    
+    
+    //TODO: Funksjon for å legge til flere templates og lister.
+    //TODO: SQL lagrer listene som folk skriver inn.
+    //TODO: hente lister
+    //TODO: CSS til forside, lister osv..
+    //TODO: Gå gjennom oppgaven enda en gang.
+    
+    //setTemp("id", content)
+    
+    
+    
+/*------------------------TESTER Å LAGE EN CLEARSCREEN FUNKSJON---------------------------------*/
+    function clearScreen(){
+        let container = document.getElementById("content");
+            while (container.firstChild) {
+                container.removeChild(content.firstChild);
+            }
+    }
+/*------------------------ Logg inn ---------------------------*/
+    
+    function displayLoginForm() {
+        setTemp("authenticateUserUITemplate", cont);
+        let btn = document.getElementById("loginBt");
+        btn.onclick = btnLogin;     
+    }
+    
+    async function btnLogin (evt) {
+        evt.preventDefault();
+        let form = document.getElementById("loginForm");
+        let username = document.getElementById("userName").value;
+        let password = document.getElementById("password").value;
+        let uploadData = JSON.stringify({
+            pswHash: password,
+            user: username
+        });
+        let cfg = {
+            method: "POST",
+            body: uploadData,
+            headers: {
+                "Content-Type": "application/json; charset=utf-8"
+            }
+        };
+        
+/*------------------------ Tester om innlogging er vellykket eller om det er noe anna feil ---------------------*/
+        
+        try {
+            fetch("/app/user/auth", cfg).then(function (respons){ //callback fra funksjonen fetch
+                if (respons.status < 400) {
+                    console.log(respons);
+                    return respons.json();
+                    console.log("velkommen");
+                } else if (respons.status === 401) {
+                    // Username or password was wrong, informe the user.
+                    console.log("Wrong username or password");
+                } else {
+                    // Some other thing went wrong.
+                    console.log("Could not log you in at this time, try again later");
+                }
+            }).then(function (responsJSON) { // callback fra respos.json
+                
+                console.log("svar fra server", responsJSON);
+                authenticationToken =  responsJSON.token;
+                userID = responsJSON.userID;
+                localStorage.setItem('authenticationToken',authenticationToken);
+                localStorage.setItem('userID',userID);
+                console.log(authenticationToken);
+                displayListForm();
+                // all done user is auth and logd in!
+               
+            }).catch(function (err) {
+                // fetch could not complete the request.
+                console.log(err.message);
+            });
+        } catch(err) {
+            console.log(err);
+            // Her er svaret fra server og bruker ikke logget inn
+        }
+    }
+    function btnCreate () {
+        displayCreateUserForm();
+        console.log("kjør create temp");
+    }
+    
+/*------------------ LISTE ---------------------*/
+    
+    function displayListForm(){
+        setTemp("Lister", cont);
+        
+        //TODO: Read List from server
+        //sendListTodb();
+    }
+    
+    function sendListTodb(){
+        fetch('/app/list',{
+                method:"POST",
+                body:JSON.stringify({
+                    userid:userid,
+                    listenavn:listenavn,
+                    listeid:listeid,
+                }),
+            
+                headers: {
+                    "Content-Type": "application/json; charset=utf-8"
+                },
+            }).then(function(data){
+                if(data.status < 400){
+                    return data.json();
+                }
+            }).then(function(token){
+                console.log(token);
+                localStorage.setItem("token", token.tok);
+                
+            }).catch(err =>{
+                console.error(err);
+            });
+        
+    }
+    
+/*------------------------ Lag bruker ------------------------- */
+    
+    function displayCreateUserForm() {
+        setTemp("createUserUITemplate", cont);
+        let form = document.getElementById("createUserForm");
+        form.onsubmit = function (evt) {
+            // Stops the form from submitting
+            evt.preventDefault();
+            // Username, email and password is validated by browser :)
+            // if values are missing it is our mistake in not finding the correct element.
+            // https://developer.mozilla.org/en-US/docs/Learn/HTML/Forms/Form_validation
+            let userName = document.getElementById("newUserName").value;
+            let password = document.getElementById("newPassword").value;
+            let email = document.getElementById("email").value;
+            let role = USER_ROLE;
+            fetch('/app/user/create',{
+                method:"POST",
+                body:JSON.stringify({
+                    name:userName,
+                    pswHash:password,
+                    userRole:role,
+                    email:email
+                }),
+                headers: {
+                    "Content-Type": "application/json; charset=utf-8"
+                },
+            }).then(function(data){
+                if(data.status < 400){
+                    return data.json();
+                }
+            }).then(function(token){
+                console.log(token);
+                localStorage.setItem("token", token.tok);
+                //if(createdUser.id){
+                    // We have a newly created user !!
+                    clearScreen(); //----------------KJØRER CLEARSCREEN---------------------------
+                    displayLoginForm(); //-------------TILBAKE TIL START #LOGIN-------------------
+                //}
+            }).catch(err =>{
+                console.error(err);
+            });
+        }
+    }
+    
+    //------------------    Lager ny liste på server ---------------------------------------
+    function btnListCreateClick() {
+    try {
+        authenticationToken = localStorage.getItem("authenticationToken");
+        userID = localStorage.getItem("userID");
+       let uploadData = JSON.stringify({
+            token: authenticationToken,
+            userID: userID,
+            listenavn: document.getElementById("txtListName").value
+        });
+        let cfg = {
+            method:"POST",
+            body:uploadData,
+            headers: {
+                "Content-Type": "application/json; charset=utf-8"
+            }
+        };
+        fetch("/app/list/create", cfg).then(function (respons){ //callback fra funksjonen fetch
+                if (respons.status < 400) {
+                    console.log(respons);
+                    return respons.json();
+                    console.log("velkommen");
+                } else if (respons.status === 401) {
+                    // Username or password was wrong, informe the user.
+                    console.log("Wrong username or password");
+                } else {
+                    // Some other thing went wrong.
+                    console.log("Could not log you in at this time, try again later");
+                }
+            }).then(function (responsJSON) { // callback fra respos.json
+                
+                console.log("svar fra server", responsJSON);
+                // OK vi har fått laget en ny liste
+               
+            }).catch(function (err) {
+                // fetch could not complete the request.
+                console.log(err.message);
+            });
+        } catch(err) {
+            console.log(err);
+            // Her er svaret fra server og bruker ikke logget inn
+        }
+    }
+    //-----------------------------------------------------------------------------------------------
+    
+        
+    function log(...messages) {
+        if (DEBUG) {
+            messages.forEach(msg => {
+                console.log(msg);
+            })
+        }
+    }
+</script>
+
+
+
+</html>
