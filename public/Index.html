@@ -71,6 +71,18 @@
     </form>
 </template>
     
+<!------------------ Personlige lister ------------------->
+<template id ="mineLister">
+    <form>
+        <label for="txtMyLists">Mine lister</label>
+        
+        <input id="txtMyListsInput" placeholder="Navn på gjøremål">
+        
+        <ul id="minListe"></ul>
+        
+        <button id="btnTodo" type="button" onclick="">To do</button>
+    </form>
+</template>
 
 </body>
 <script>
@@ -195,10 +207,20 @@
     
     function displayListForm(){
         setTemp("Lister", cont);
+        henteLister();
+        listeUt(data); //funksjon for for loop
+/*------------------ Leser liste fra DB -------------*/
+        
+
+        
+    } 
+        
+     
         
         //TODO: Read List from server
         //sendListTodb();
-    }
+    
+  /*  -----------------   Sender liste til DB -----------------------*/
     
     function sendListTodb(){
         fetch('/app/list',{
@@ -270,7 +292,8 @@
         }
     }
     
-    //------------------    Lager ny liste på server ---------------------------------------
+/*------------------    Lager ny liste på server ----------------------*/
+    
     function btnListCreateClick() {
     try {
         authenticationToken = localStorage.getItem("authenticationToken");
@@ -313,8 +336,51 @@
             // Her er svaret fra server og bruker ikke logget inn
         }
     }
-    //-----------------------------------------------------------------------------------------------
     
+/*-------------------------Lese lister---------------------*/
+    
+    async function henteLister(){
+        console.log('Kjører hente lister funksjon');
+    let response = await fetch("/app/list/",{
+                method:"GET",
+                headers: {
+                    "Content-Type": "application/json; charset=utf-8",
+                    "x-access-auth":authenticationToken
+                },
+            });
+        let data = await response.json();
+        console.log(data);
+        return data;
+    }
+    
+    function listeUt(data){ //satt denne funksjonen under displayListForm -fungerer ikke. 
+        
+/*------ Få opp lister i vinduet/template lister -----*/
+        
+        let henteUtLister = "";
+        for (let i = 0; i < data.lenght; i++){
+            henteUtLister += "<p>" + data[i].listenavn + "</p>";
+            
+            content.innerHTML += henteUtLister; 
+            console.log(data);
+            
+        }
+        
+        
+        
+    /*
+    .then(function(data){
+                if(data.status < 400){
+                    return data.json();
+                }
+            }).then(function(token){
+                console.log(token);
+                
+            }).catch(err =>{
+                console.error(err);
+            });*/
+        
+    } 
         
     function log(...messages) {
         if (DEBUG) {
